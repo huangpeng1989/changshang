@@ -1,0 +1,89 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]': # 匹配所有请求
+              allowedOrigins: "*" #跨域处理 允许所有的域
+              allowedMethods: # 支持的方法
+                - GET
+                - POST
+                - PUT
+                - DELETE
+      routes:
+            - id: changshang_system_route
+              uri: lb://system
+              predicates:
+              - Path=/system-url/**
+              filters:
+              - StripPrefix=1
+              - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory
+                args:
+                  key-resolver: "#{@ipKeyResolver}"
+                  redis-rate-limiter.replenishRate: 1
+                  redis-rate-limiter.burstCapacity: 1
+            - id: changshang_goods_route
+              uri: lb://goods
+              predicates:
+              - Path=/goods-url/**
+              filters:
+              - StripPrefix=1
+              - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory
+                args:
+                  key-resolver: "#{@ipKeyResolver}"
+                  #每秒钟一个请求
+                  redis-rate-limiter.replenishRate: 1
+                  #宽限的个数  即充许并发1个请求
+                  redis-rate-limiter.burstCapacity: 1
+            - id: changshang_supper_route
+              uri: lb://supper
+              predicates:
+              - Path=/supper-url/**
+              filters:
+              - StripPrefix=1
+              - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory
+                args:
+                    key-resolver: "#{@ipKeyResolver}"
+                    #每秒钟一个请求
+                    redis-rate-limiter.replenishRate: 1
+                    #宽限的个数  即充许并发1个请求
+                    redis-rate-limiter.burstCapacity: 1
+            - id: changshang_restaurant_route
+              uri: lb://restaurant
+              predicates:
+              - Path=/restaurant-url/**
+              filters:
+              - StripPrefix=1
+              - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory
+                args:
+                  key-resolver: "#{@ipKeyResolver}"
+                  #每秒钟一个请求
+                  redis-rate-limiter.replenishRate: 1
+                  #宽限的个数  即充许并发1个请求
+                  redis-rate-limiter.burstCapacity: 1
+            - id: changshang_userinfo_route
+              uri: lb://userinfo
+              predicates:
+              - Path=/userinfo-url/**
+              filters:
+              - StripPrefix=1
+  application:
+    name: gateway-web
+  redis:
+    host: 192.168.1.1
+    port: 6379
+server:
+  port: 8001
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:7001/eureka
+  instance:
+    prefer-ip-address: true
+management:
+  endpoint:
+    gateway:
+      enabled: true
+    web:
+      exposure:
+        include: true
